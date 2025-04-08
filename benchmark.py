@@ -1,13 +1,15 @@
 import numpy as np
 import time
+import pandas as pd
+from tqdm import tqdm
 from brute_force_solver import sudoku_brute_force 
-from sat_solver import sudoku_sat                  
+from sat_solver import SudokuSolver 
 
 def load_boards_from_txt(filename):
     """
     Input: file consisting of sudoku grids (currently 9x9 only compatible)
-    Converts file contents to np arrays as neccessary
-    Returns: list size x (depending on number of grids in file) list[type=np.array]
+    Converts file contents to numpy arrays as necessary.
+    Returns: list of np.array boards.
     """
     boards = []
     board_lines = []
@@ -29,53 +31,71 @@ def load_boards_from_txt(filename):
 
 def print_board(board):
     """
-    Input: np array of sudoku
-    If neccessary converts board to np array
-    Print: board as readable format
+    Input: np.array of sudoku
+    Prints the board in a human-readable format.
     """
     if isinstance(board, np.ndarray):
         board = board.tolist()
     for row in board:
         print(" ".join(str(num) for num in row))
 
+def print_summary(results):
+    """
+    Print summary statistics grouped by solver using the results list.
+    """
+    df = pd.DataFrame(results)
+    grouped = df.groupby("solver").agg({
+        "time_ms": ["mean", "min", "max", "std"],
+        "board_index": "count"
+    })
+    print("Summary by Solver:")
+    print(grouped)
+    
 def main():
     filename = 'sudoku_puzzles.txt'
     boards = load_boards_from_txt(filename)
+    results = []  # List to store benchmarking results for each board & solver.
     
-    for i, board in enumerate(boards, start=1):
-        print(f"Processing Board {i} with Brute Force Solver:")
-        print("Original Board:")
-        print_board(board)
-        print()
+    # Initialize the SAT solver once.
+    sat_solver = SudokuSolver()
+    
+    # Wrap the boards iterable with tqdm to display a progress bar.
+    for i, board in enumerate(tqdm(boards, desc="Processing boards"), start=1):
         
-        # Brute Force Solver
-        start_time = time.time() * 1000
-        solved, solved_board = sudoku_brute_force(board.copy())
+        # --- Brute Force Solver Benchmark ---
+        start_time = time.time() * 1000  # time in milliseconds
+        solved_brute, solved_board = sudoku_brute_force(board.copy())
         end_time = time.time() * 1000
-        if solved:
-            print(f"Brute Force took: {end_time - start_time} ms")
-            print("Brute Force Solved Board:")
-            print_board(solved_board)
-        else:
-            print("No solution exists for this board (Brute Force).")
-        print("-" * 40)
+        brute_time = end_time - start_time
+
+        results.append({
+            'board_index': i,
+            'solver': 'brute',
+            'time_ms': brute_time if solved_brute else None,
+            'outcome': 'solved' if solved_brute else 'DNF'
+        })
         
-        # SAT Solver
-        print(f"Processing Board {i} with SAT Solver:")
-        print("Original Board:")
-        print_board(board)
-        print()
-        start_time = time.time() * 1000
-        solved, solved_board = sudoku_sat(board.copy())
+        # --- SAT Solver Benchmark ---
+        start_time = time.time() * 1000  # time in milliseconds
+        solved_sat, solved_board = sat_solver.solve(board.copy())
         end_time = time.time() * 1000
-        if solved:
-            print(f"SAT Solver took: {end_time - start_time} ms")
-            print("SAT Solver Solved Board:")
-            print_board(solved_board)
-        else:
-            print("No solution exists for this board (SAT Solver).")
-        print("-" * 40)
-        print()
+        sat_time = end_time - start_time
+
+        results.append({
+            'board_index': i,
+            'solver': 'sat',
+            'time_ms': sat_time if solved_sat else None,
+            'outcome': 'solved' if solved_sat else 'DNF'
+        })
+    
+    # Print a summary of the benchmark results.
+    print_summary(results)
+    
+    # Write full results to a CSV file.
+    df = pd.DataFrame(results)
+    csv_filename = 'benchmark_results.csv'
+    df.to_csv(csv_filename, index=False)
+    print(f"Results saved to {csv_filename}")
 
 if __name__ == '__main__':
-    main() 
+    main()

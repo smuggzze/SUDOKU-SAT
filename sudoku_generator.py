@@ -10,7 +10,7 @@ def generate_full_board():
     else:
         raise Exception("Failed to generate a full board.")
 
-def remove_cells(board, removals=40):
+def remove_cells(board, removals):
     puzzle = board.copy()
     cells = [(r, c) for r in range(9) for c in range(9)]
     random.shuffle(cells)
@@ -31,13 +31,19 @@ def save_boards_to_txt(boards, filename):
             f.write('\n')  
 
 if __name__ == '__main__':
-    num_puzzles = 50  
+    num_puzzles = 1000 
     puzzles = []
+    removals = 81
+    for i in range(9*9): 
+        removals -= 1
+        if removals == 0:
+            break 
+        for i in range(num_puzzles):
+            full_board = generate_full_board()
+            puzzle = remove_cells(full_board, removals)
+            puzzles.append(puzzle)
+            
     
-    for i in range(num_puzzles):
-        full_board = generate_full_board()
-        puzzle = remove_cells(full_board, removals = 40)
-        puzzles.append(puzzle)
-    
+
     save_boards_to_txt(puzzles, 'sudoku_puzzles.txt')
     print(f"{num_puzzles} Sudoku puzzles generated and saved to 'sudoku_puzzles.txt'")
