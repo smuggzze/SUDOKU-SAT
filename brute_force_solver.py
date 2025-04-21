@@ -1,8 +1,8 @@
+import time
 import numpy as np
 import random
 
 def validator(board, row, col, num):
-    
     # Check row and column
     if num in board[row] or num in board[:, col]:
         return False
@@ -21,10 +21,17 @@ def find_empty_cell(board):
                 return r, c
     return None
 
+def sudoku_brute_force(board, start_time=None, time_limit=10):
+    # Set start_time only once for the entire recursion
+    if start_time is None:
+        start_time = time.perf_counter()
+    
+    # Check if the time limit has been exceeded.
+    if time.perf_counter() - start_time > time_limit:
+        return False, board
 
-def sudoku_brute_force(board):
     empty_cell = find_empty_cell(board)
-    if not empty_cell:
+    if empty_cell is None:
         return True, board  # Board is completely filled
 
     row, col = empty_cell
@@ -34,7 +41,7 @@ def sudoku_brute_force(board):
     for num in numbers:
         if validator(board, row, col, num):
             board[row, col] = num
-            solved, result = sudoku_brute_force(board)  # Unpack the result here
+            solved, result = sudoku_brute_force(board, start_time, time_limit)
             if solved:
                 return True, result
             board[row, col] = 0  # Backtrack
@@ -46,11 +53,11 @@ if __name__ == '__main__':
     board = np.zeros((9, 9), dtype=int)
     
     # Optionally, set up an initial board here.
-    # For example, board[0, 0] = 5, board[0, 1] = 3, etc.
+    # For example: board[0, 0] = 5, board[0, 1] = 3, etc.
     
-    if sudoku_brute_force(board):
+    solved, solved_board = sudoku_brute_force(board)
+    if solved:
         print("Solved Sudoku board:")
-        print(board)
+        print(solved_board)
     else:
-        print("No solution exists for the provided board.")
-
+        print("No solution exists for the provided board or time limit exceeded.")
