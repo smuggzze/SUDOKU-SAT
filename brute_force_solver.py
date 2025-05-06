@@ -22,7 +22,6 @@ def find_empty_cell(board):
     return None
 
 def sudoku_brute_force(board, start_time=None, time_limit=10):
-    # Set start_time only once for the entire recursion
     if start_time is None:
         start_time = time.perf_counter()
     
@@ -49,11 +48,8 @@ def sudoku_brute_force(board, start_time=None, time_limit=10):
     return False, board  # No solution found
 
 if __name__ == '__main__':
-    # Test/demo code that runs only when executing this file directly.
     board = np.zeros((9, 9), dtype=int)
     
-    # Optionally, set up an initial board here.
-    # For example: board[0, 0] = 5, board[0, 1] = 3, etc.
     
     solved, solved_board = sudoku_brute_force(board)
     if solved:

@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 # Read the CSV file with the results.
 df = pd.read_csv('benchmark_results.csv')
 
-# Filter the data for each solver and outcome.
 # For brute force:
 bf_solved = df[(df['solver'] == 'brute') & (df['outcome'] == 'solved')]
 bf_dnf    = df[(df['solver'] == 'brute') & (df['outcome'] == 'DNF')]

@@ -6,7 +6,6 @@ from brute_force_solver import sudoku_brute_force
 from sat_solver import SudokuSolver 
 
 def load_boards_from_txt(filename):
-    # (Keep the same implementation as before)
     boards = []
     board_lines = []
     with open(filename, 'r') as f:
@@ -37,12 +36,10 @@ def main():
     boards = load_boards_from_txt(filename)
     results = []  # List to store benchmarking results.
     
-    # Initialize the SAT solver once.
     sat_solver = SudokuSolver()
     
     # Process each board with a progress bar.
     for i, board in enumerate(tqdm(boards, desc="Processing boards"), start=1):
-        # Record the number of removals (i.e. zeros in the board)
         removals = int(np.sum(board == 0))
         
         # --- Brute Force Solver Benchmark ---
@@ -73,7 +70,6 @@ def main():
     
     print_summary(results)
     
-    # Save the results to CSV for plotting.
     df = pd.DataFrame(results)
     df.to_csv('benchmark_results.csv', index=False)
     print("Results saved to benchmark_results.csv")
